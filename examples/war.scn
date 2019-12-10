@@ -1,0 +1,95 @@
+;
+; Copyright (c) 2004, Steven Baldasty <sbaldasty@bitflippin.org>
+;
+; Permission to use, copy, modify, and/or distribute this software for any
+; purpose with or without fee is hereby granted, provided that the above
+; copyright notice and this permission notice appear in all copies.
+;
+; Contributors:
+;    Steven Baldasty <sbaldasty@bitflippin.org>
+;
+; THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+; WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+; MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+; ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+; WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+; ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+; OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+;
+
+; Rows on the map grid.
+; Must agree with height of map data.
+;
+HEIGHT 20
+
+; Columns on the map grid.
+; Must agree with width of map data.
+;
+WIDTH 20
+
+; How many Tunits the simulation runs.
+; Zero means unlimited time.
+; Some robot moves take several Tunits.
+;
+TIME 100000
+
+; Damage robots do when they hit each other.
+; Zero means robots never get hurt.
+; They all start out with 20 health.
+;
+VIOLENCE 3
+
+; First team to attain this score wins.
+; The game ends immediately.
+;
+WIN 210
+
+; Points each robot earns its team.
+; Lost if robot dies.
+;
+ROBOT 1
+
+; Points each treasure earns its team.
+; Lost if treasure stolen or destroyed.
+;
+TREASURE 1
+
+; Map data (use these symbols).
+;
+; '.'  :  Space
+; '#'  :  Wall
+; 'd'  :  Diamond
+; 'b'  :  Blue robot
+; 'g'  :  Green robot
+; 'r'  :  Red robot
+; 'p'  :  Purple robot
+; 'u'  :  Unowned robot
+; 's'  :  Slowing item
+; 'k'  :  Power item
+; 'D'  :  Diamond producer
+; 'U'  :  Robot producer
+; 'S'  :  Slowing item producer
+; 'K'  :  Power item producer
+;
+; The whole border must be walled off.
+;
+"####################"
+"#rrr....u##u....bbb#"
+"#rrr.....##.....bbb#"
+"#rrr....u##.....bbb#"
+"#..................#"
+"#..................#"
+"#.................u#"
+"#..........u.......#"
+"#..................#"
+"#..................#"
+"#..................#"
+"#..................#"
+"#..................#"
+"#..................#"
+"#..................#"
+"#..................#"
+"#ggg............ppp#"
+"#ggg............ppp#"
+"#ggg............ppp#"
+"####################"

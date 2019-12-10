@@ -1,0 +1,50 @@
+<html>
+<head>
+<title>NinjaRobots Documentation</title>
+<meta name="author" value="Steven Baldasty">
+</head>
+<body>
+<h1>NinjaRobots Documentation</h1>
+<p>I wanted to design a language for dictating the behavior of characters in a simulated world, similar to <a href="http://www.mtsu.edu/~untch/karel">Karel the Robot</a>. My <a href="#examples">example programs</a> teach the world and language properties, but beyond the basics NinjaRobots could potentially demonstrate concepts from artificial intelligence and <a href="http://william-king.www.drexel.edu/top/eco/game/game.html">game theory</a>.</p>
+<p>This <a href="ninjarobots.zip">ZIP file</a> contains everything needed to begin: an executable JAR file, GIF images, and sample code you can load from within NinjaRobots. Note that if not already present, you must install the Java virtual machine from <a href="http://www.sun.com">Sun Microsystems</a>. You may also download my <a href="source.zip">source code</a>.</p>
+<h2>Screenshots</h2>
+<table cellpadding="5">
+<tr valign="top"><td><img src="scened.gif" alt="Scenario Editor screenshot"></td><td><h3 id="scened">Scenario editor</h3><p>Analogous to the &quot;World Editor&quot; of Karel, the scenario editor facilitates dictation of world content and control over simulator parameters. Scenario files must follow a rigid but well-documented format (for an example, <em>Load</em> the <tt>west1.scn</tt> file).</p><p>The <em>Parse</em> command rigorously checks the scenario for errors. It either returns to the main screen (success) or displays a helpful error message (failure).</p></td></tr>
+<tr valign="top"><td><img src="proged.gif" alt="Program Editor screenshot"></td><td><h3 id="proged">Team program editor</h3><p>A similar interface allows users to <em>Load</em>, <em>Save</em>, edit, and <em>Parse</em> programs that control robot behavior. With prior programming experience, users can study the <a href="#examples">examples</a> and <a href="#language">documentation</a> to learn the language.</p><p>Again, the parser highlights problematic lines and displays a meaningful error message to help debug. Actual runtime errors in the simulator cause Robot elimination.</td></tr>
+<tr valign="top"><td><img src="main.gif" alt="Startup Screen screenshot"></td><td><h3>Startup Screen</h3><p>On startup, this screen provides access to the editors and the simulator itself. It accepts exactly one scenario and up to four programs which control distinct &quot;robot teams&quot;. The simulator renders each team in a unique color.</p><p>NinjaRobots enables the <em>Begin</em> command after parsing an error-free scenario. Not all scenarios use four teams, and teams without programming do nothing.</p></td></tr>
+<tr valign="top"><td><img src="sim.gif" alt="Simulator screenshot"></td><td><h3>Simulator</h3><p>The simulator tracks the passage of <em>tunits</em> (time units) and team scores. A message window records significant events, and in future releases may display robot memory content.</p><p>The sequence of events is functionally dependent on the scenario and programs. Programmers can therefore easily repeat experiments, but without the benefit of the excitement a touch of randomness would introduce.</p></td></tr>
+</table>
+<h2 id="examples">Example Simulations</h2>
+<p>Each example consists of two files: a scenario file and a robot program of the same name. First <em>Load</em> and <em>Parse</em> the <tt>.scn</tt> file in the <a href="#scened">Scenario Editor</a>. Then <em>Load</em> and <em>Parse</em> the <tt>.rob</tt> file in the <a href="#proged">Program Editor</a>, multiple times if necessary. Finally, click <em>Begin</em> and <em>Run</em> the simulator.</p>
+<table cellpadding="5">
+<tr align="left" valign="top"><th><tt>west1</tt></th><td><p>The <code>WIN</code> parameter says a team must earn 3 points to win. <code>ROBOT</code> and <code>TREASURE</code> say robots and treasure count for 1 and 2 points respectively. Watch the red robot venture west and claim the treasure for its team.</p></td></tr>
+<tr align="left" valign="top"><th><tt>patrol</tt></th><td><p>The program in this example uses a conditional statement and the special <a href="#envq">environment query operator</a> to illustrate more complex movement. The robots patrol until <code>TIME</code> expires.</p></td></tr>
+<tr align="left" valign="top"><th><tt>west2</tt></th><td><p>Robots can also <code>TAKE</code> and <code>DROP</code> treasure. Again parameters require the robot to claim all the treasure. Incidentally, teams can also steal treasure from other teams and carry it away.</p></td></tr>
+<tr align="left" valign="top"><th><tt>hack</tt></th><td><p>The <code>VIOLENCE</code> parameter controls how badly robots damage each other when they <code>ATTACK</code>. They can <code>ATTACK</code> and destroy treasure too. NinjaRobots eventually halts the infinite loop in this example by eliminating the offender.</p></td></tr>
+<tr align="left" valign="top"><th><tt>comm</tt></th><td><p>Robot generators build unowned robots, and treasure generators build unowned treasure. When a team claims a robot, the robot executes that team's program. Information a robot <code>WHISPER</code>s becomes a property of that robot's cell, which neigboring robots can query with expressions like <code>EAST'WORD</code>.</p></td></tr>
+<tr align="left" valign="top"><th><tt>war</tt></th><td><p>Four robot teams wage war. The program makes full use of the language's features, including arrays, functions, and compound types. It could tolerate improvement though, as the simulation ends in stalemate.</p></td></tr>
+</table>
+<h2 id="language">Language Details</h2>
+<h3>Flow Control</h3>
+<p>A robot's program runs from the beginning on each turn. It navigates conditionals, loops, and functions as any normal procedural language would. The program terminates when control reaches a <code>choose <i>ACTION</i></code> command: the robot performs <code><i>ACTION</i></code>, and its turn ends.</p>
+<h3 id="envq">Data Types</h3>
+<p>The language supplies one primitive data type: an unsigned 8-bit integer with infix operators <code>+</code> (addition), <code>-</code> (subtraction), <code>*</code> (multiplication), <code>/</code> (division), <code>%</code> (modulus), and <code>'</code> (environment query). Expression parsing respects the standard mathematical order of operations and parentheses, with <code>'</code> given the highest precedence of all. When an operation overflows or becomes negative, NinjaRobots retains the 8 least significant bits and continues execution.</p>
+<p>Below the numerical operators come three comparison operators: <code>=</code> (equality), <code>&lt;</code> (less than), and <code>&gt</code> (greater than). These operators return either <code>TRUE</code> (an alias for 255) or <code>FALSE</code> (an alias for 0). Lastly, the bitwise/conjunctive operators <code>&amp</code> (AND) and <code>|</code> (OR) are evaluated.</p>
+<p>All newly declared variables must initialize immediately (note that <code>:</code> means assignment, and the boolean <code>=</code> operator checks equality). This rule applies even when primitives combine to form arrays and composite types.</p>
+<p>Arrays can serve as elements of composite types, and vice versa to any depth. Arrays and composites pass poorly to functions however, and non-primitive variables of like types cannot simply copy onto each other. If this project <a href="mailto:s_baldasty@plymouth.edu">generates enough interest</a>, I may fix these weaknesses in a second release.</p>
+<h3>Pre-Defined Constants</h3>
+<p>Constants are simply primitives whose values cannot change. Several pre-defined constants help <code>choose</code> commands and expressions involving the query operator look more intuitive. Programmers can define their own constants too, perhaps for use in some inter-robot communication protocol of their own invention.</p>
+<table border="1" cellspacing="0" cellpadding="3">
+<tr><th align="right">Boolean</th><td><code>TRUE</code>, <code>FALSE</code></td></tr>
+<tr><th align="right">Directional</th><td><code>HERE</code>, <code>NORTH</code>, <code>EAST</code>, <code>SOUTH</code>, <code>WEST</code></td></tr>
+<tr><th align="right">Action</th><td><code>MOVE</code>, <code>WHISPER</code>, <code>TAKE</code>, <code>DROP</code>, <code>ATTACK</code></td></tr>
+<tr><th align="right">Characteristic</th><td><code>OCCUPANT</code>, <code>TEAM</code>, <code>HEALTH</code>, <code>WORD</code></td></tr>
+<tr><th align="right">Occupant</th><td><code>NOBODY</code>, <code>WALL</code>, <code>PRODUCER</code>, <code>ROBOT</code>, <code>TREASURE</code>, <code>POWERITEM</code>, <code>HEALTHITEM</code></td></tr>
+<tr><th align="right">Miscellaneous</th><td><code>UNDEFINED</code></td></tr>
+</table>
+<p><code>TRUE</code> and <code>FALSE</code> have the values 255 and 0 respectively, so the useful properties <code>TRUE = !FALSE</code> and <code>FALSE = !TRUE</code> hold (<code>!</code> is the bitwise NOT operator).</p>
+<h3>Scope</h3>
+<p>Variables, arrays, types, functions, and constants declared within some block are visible within any child blocks, but invisible to the parent block (if one exists). Ambiguous names always resolve to the inner-most declaration with that name. As in <a href="http://www.adahome.com">Ada</a>, programmers may declare any entity type inside any block.</p>
+<p>Robots have two types of memory: a <em>short-term memory</em> which disappears when their turns end, and a <em>long-term memory</em> which persists. NinjaRobots treats variables declared in the <em>global scope</em> as long-term variables. They initialize on the robot's first turn, and never again: the robot &quot;remembers&quot; their values for next time. The robot forgets every other variable (those declared inside functions) between turns.</p>
+</body>
+</html>

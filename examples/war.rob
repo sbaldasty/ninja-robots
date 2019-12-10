@@ -1,0 +1,156 @@
+;
+; Copyright (c) 2004, Steven Baldasty <sbaldasty@bitflippin.org>
+;
+; Permission to use, copy, modify, and/or distribute this software for any
+; purpose with or without fee is hereby granted, provided that the above
+; copyright notice and this permission notice appear in all copies.
+;
+; Contributors:
+;    Steven Baldasty <sbaldasty@bitflippin.org>
+;
+; THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+; WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+; MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+; ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+; WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+; ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+; OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+;
+
+;Reverse of direction D.
+function Reverse(D) : UNDEFINED
+  variable D : UNDEFINED
+  if D = NORTH
+    let Reverse : SOUTH
+  elseif D = EAST
+    let Reverse : WEST
+  elseif D = SOUTH
+    let Reverse : NORTH
+  elseif D = WEST
+    let Reverse : EAST
+  end
+end
+
+;Direction left of D.
+function Left(D) : UNDEFINED
+  variable D : UNDEFINED
+  if D = NORTH
+    let Left : WEST
+  elseif D = EAST
+    let Left : NORTH
+  elseif D = SOUTH
+    let Left : EAST
+  elseif D = WEST
+    let Left : SOUTH
+  end
+end
+
+;Direction right of D.
+function Right(D) : UNDEFINED
+  variable D : UNDEFINED
+  if D = NORTH
+    let Right : EAST
+  elseif D = EAST
+    let Right : SOUTH
+  elseif D = SOUTH
+    let Right : WEST
+  elseif D = WEST
+    let Right : NORTH
+  end
+end
+
+;If i can leave this square or not.
+function CanEscape() : FALSE
+  variable I : 0       ;Iterate over 4 directions.
+  variable D : NORTH   ;Direction holder.
+  while I < 4
+    let CanEscape : CanEscape | (D'OCCUPANT = NOBODY)
+    let I : I + 1
+    let D : Left(D)
+  end
+end
+
+
+;An idea about what i should do this turn.
+;I choose most agreeable proposal for my action.
+type Proposal
+
+  ;Pseudo-action constant meaning i wish to leave.
+  ;Result of choosing escape proposals vary.
+  constant ESCAPE : 28
+
+  ;How important this objective is to me.
+  ;Zero is totally unimportant, 255 is imperative.
+  variable Priority : 0
+
+  ;What type of action i should do if i accept this.
+  ;Must be action constant or escape.
+  variable Action : UNDEFINED
+
+  ;Direction in which i should do this action.
+  ;If escape, this is direction of the threat.
+  variable Direction : UNDEFINED
+
+end
+
+
+;Long-term objectives that persist to my next turn.
+;Like escaping strong enemies and pursuing weak ones.
+constant LONGTERMS : 20
+array LongTerm size LONGTERMS type Proposal
+
+
+function Main() : UNDEFINED
+
+  ;Scanning each direction creates an impulse.
+  ;Create the four impulses.
+  array Impulse size 4 type Proposal
+  function Assess() : UNDEFINED
+
+    variable I : 0       ;Iterate over 4 directions.
+    variable D : NORTH   ;Direction holder.
+
+    while I < 4
+      let Impulse[I].Direction : D
+
+      if D'OCCUPANT = NOBODY
+        let Impulse[I].Priority : 1
+        let Impulse[I].Action : MOVE
+      elseif D'OCCUPANT = ROBOT
+        if D'TEAM = UNOWNED
+          let Impulse[I].Priority : 100
+          let Impulse[I].Action : MOVE
+        elseif !(D'TEAM = HERE'TEAM)
+          let Impulse[I].Priority : 50
+          let Impulse[I].Action : ATTACK
+        end
+      end
+
+      let I : I + 1
+      let D : Left(D)
+    end
+  end
+
+  invoke Assess()
+  variable I : 0
+  variable Highest : UNDEFINED
+  while I < 4
+    if (Impulse[I].Priority) > 0
+      if Highest = UNDEFINED
+        let Highest : I
+      elseif (Impulse[I].Priority) > (Impulse[Highest].Priority)
+        let Highest : I
+      end
+    end
+    let I : I + 1
+  end
+  if Highest = UNDEFINED
+    choose WHISPER UNDEFINED
+  else
+    choose Impulse[Highest].Action Impulse[Highest].Direction
+  end
+
+end
+
+
+invoke Main()

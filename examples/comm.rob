@@ -1,0 +1,161 @@
+;
+; Copyright (c) 2004, Steven Baldasty <sbaldasty@bitflippin.org>
+;
+; Permission to use, copy, modify, and/or distribute this software for any
+; purpose with or without fee is hereby granted, provided that the above
+; copyright notice and this permission notice appear in all copies.
+;
+; Contributors:
+;    Steven Baldasty <sbaldasty@bitflippin.org>
+;
+; THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+; WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+; MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+; ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+; WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+; ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+; OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+;
+
+;Robot Communication Demo
+
+;Task constants.
+constant MEMORIZE : 30   ;Leader moves west, counting up steps.
+constant FOLLOW : 31     ;Follower moves east, counting down steps.
+constant GUIDE : 32      ;Leader awakens follower or says how many steps.
+constant LISTEN : 33     ;Follower gets step count.
+constant SEARCH : 34     ;Follower finds unclaimed row of diamonds.
+constant HARVEST : 35    ;Follower is claiming this row.
+
+;Global variables.
+array TASKS size 9 : UNDEFINED   ;Ordered sequence of things to do.
+variable CURRENT : 0             ;Index in task list.
+variable STEPS : 0               ;How many steps before the treasure path.
+variable HOLDING : FALSE         ;Robot is holding diamond
+
+;-------------------------------------------------------------------
+
+;Initialize task list for leader or follower.
+if TASKS[0] = UNDEFINED
+   if SOUTH'OCCUPANT = NOBODY
+      let TASKS[0] : SOUTH
+      let TASKS[1] : WEST
+      let TASKS[2] : SOUTH
+      let TASKS[3] : MEMORIZE
+      let TASKS[4] : SOUTH
+      let TASKS[5] : WEST
+      let TASKS[6] : SOUTH
+      let TASKS[7] : WEST
+      let TASKS[8] : GUIDE
+   else
+      let TASKS[0] : LISTEN
+      let TASKS[1] : EAST
+      let TASKS[2] : NORTH
+      let TASKS[3] : FOLLOW
+      let TASKS[4] : NORTH
+      let TASKS[5] : EAST
+      let TASKS[6] : SEARCH
+      let TASKS[7] : HARVEST
+   end
+end
+
+;Main program - do until action.
+while TRUE
+   variable T : TASKS[CURRENT]
+   if IsDirection(T)
+      invoke DoGo(T)
+   elseif T = MEMORIZE
+      invoke DoMemorize()
+   elseif T = FOLLOW
+      invoke DoFollow()
+   elseif T = GUIDE
+      invoke DoGuide()
+   elseif T = LISTEN
+      let STEPS : SOUTH'WORD
+      let CURRENT : CURRENT + 1
+   elseif T = SEARCH
+      invoke DoSearch()
+   else
+      invoke DoHarvest()
+   end
+end
+
+;-------------------------------------------------------------------
+
+;Move east and count down the number of steps.
+function DoFollow() : UNDEFINED
+   if STEPS = 0
+      let CURRENT : CURRENT + 1
+   else
+      let STEPS : STEPS - 1
+      choose MOVE WEST
+   end
+end
+
+;Continue in direction until no longer can.
+function DoGo(D) : UNDEFINED
+   variable D : UNDEFINED
+   if D'OCCUPANT = NOBODY
+      choose MOVE D
+   else
+      let CURRENT : CURRENT + 1
+   end
+end
+
+;Prepare follower for its work.
+function DoGuide() : UNDEFINED
+   if NORTH'OCCUPANT = ROBOT
+      if NORTH'TEAM = UNOWNED
+         choose MOVE NORTH
+      end
+   end
+   choose WHISPER STEPS
+end
+
+;Harvest the diamonds.
+function DoHarvest() : UNDEFINED
+   if HOLDING
+      if WEST'OCCUPANT = NOBODY
+         choose MOVE WEST
+      else
+         let HOLDING : FALSE
+         choose DROP EAST
+      end
+   elseif WEST'OCCUPANT = NOBODY
+      choose MOVE WEST
+   elseif WEST'TEAM = UNOWNED
+      choose MOVE WEST
+   else
+      let HOLDING : TRUE
+      choose TAKE WEST
+   end
+end
+
+;Move west and count up the number of steps.
+function DoMemorize() : UNDEFINED
+   if EAST'OCCUPANT = NOBODY
+      let STEPS : STEPS + 1
+      choose MOVE EAST
+   else
+      let CURRENT : CURRENT + 1
+   end
+end
+
+;Look for first unharvested row.
+function DoSearch() : UNDEFINED
+   if SOUTH'OCCUPANT = WALL | WEST'OCCUPANT = WALL
+      choose MOVE NORTH
+   elseif WEST'OCCUPANT = NOBODY
+      let CURRENT : CURRENT + 1
+   else
+      choose MOVE NORTH
+   end
+end
+
+;-------------------------------------------------------------------
+
+;Determine if D is directional constant.
+function IsDirection(D) : UNDEFINED
+   variable D : UNDEFINED
+   let IsDirection : D = NORTH | D = SOUTH | D = EAST | D = WEST
+end
